@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Survey Arrival Predictor
 
-## Getting Started
+Dashboard pribadi berbasis Machine Learning untuk memperkirakan **kapan survei Google Opinion Rewards berikutnya datang** dan **berapa perkiraan reward-nya**, murni dari data historis yang kamu masukkan sendiri.
 
-First, run the development server:
+> Aplikasi ini tidak mengakses API atau sistem internal penyedia survei. Seluruh prediksi hanya berdasarkan data historis milikmu.
+
+## Fitur
+
+- **Dashboard** — ringkasan prediksi survei & reward berikutnya, probabilitas horizon (1/3/7/14 hari), dan aktivitas terbaru
+- **Prediksi** — estimasi interval, tanggal perkiraan, window range, expected reward + range, reliability score
+- **Manajemen Data** — tambah/edit/hapus manual, import CSV & XLSX dengan pratinjau (valid/tidak valid/duplikat), export CSV/XLSX
+- **Analitik** — frekuensi survei per bulan, tren reward, distribusi interval, statistik lengkap
+- **Riwayat Prediksi** — setiap prediksi dievaluasi otomatis saat survei baru masuk (selisih tanggal & reward)
+- **Model** — training 4 model × 2 target dengan walk-forward validation; model terbaik dipilih otomatis berdasarkan MAE terendah
+
+## Prinsip Utama
+
+> **Model mengikuti data, bukan data dipaksa mengikuti model.**
+
+Baseline sederhana (Median, Moving Average) bersaing adil dengan ML (Linear Regression, Random Forest). Jika baseline lebih akurat, baseline yang dipakai sebagai model produksi. Gradient Boosting sengaja tidak disertakan di V1.
+
+## Tech Stack
+
+| Bagian    | Teknologi |
+| --------- | --------- |
+| Frontend  | Next.js 16 (App Router), TypeScript, Tailwind CSS v4 |
+| Backend   | Next.js API Routes (satu proses, tanpa service terpisah) |
+| Database  | SQLite via `better-sqlite3` (file lokal `data/app.db`) |
+| ML        | Murni TypeScript — implementasi sendiri untuk baseline & OLS, `ml-random-forest` untuk RF |
+| Visual    | Recharts, Lucide Icons |
+
+## Menjalankan Project
 
 ```bash
+# install dependencies
+npm install
+
+# jalankan development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Produksi
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Memulai
 
-To learn more about Next.js, take a look at the following resources:
+1. Saat pertama dijalankan, database otomatis dibuat di `data/app.db` dan di-seed dengan 30 record histori dari `COLDSTART.md`
+2. Buka halaman **Model → Latih Model** untuk melatih semua model
+3. Buka **Prediction → Jalankan Prediksi** untuk melihat perkiraan survei berikutnya
+4. Setiap kali kamu menambahkan survei baru, prediksi yang masih pending otomatis dievaluasi
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Struktur Project
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/                  # Halaman UI (dashboard, prediction, data,
+│                         # analytics, history, model, settings)
+├── app/api/              # Route handlers (CRUD, import/export,
+│                         # train, predict, analytics, models)
+├── components/           # AppShell (sidebar/bottom-nav), Toast, komponen UI
+├── lib/
+│   ├── db/               # Koneksi SQLite, schema, seed cold-start
+│   ├── ml/
+│   │   ├── models.ts     # Median, Moving Average, OLS, Random Forest
+│   │   ├── validation.ts # Walk-forward split & evaluasi semua model
+│   │   ├── metrics.ts    # MAE, RMSE, R², within-tolerance accuracy
+│   │   ├── train.ts      # Orkestrasi training & seleksi model aktif
+│   │   └── predict.ts    # Prediksi, reliability, probability horizon
+│   ├── features.ts       # Feature engineering anti data-leakage
+│   ├── dataService.ts    # CRUD + validasi input
+│   └── evaluate.ts       # Auto-evaluasi prediksi vs aktual
+└── types.ts              # Tipe data bersama
+```
 
-## Deploy on Vercel
+## Model & Validasi
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Target**: `days_until_next_survey` (arrival) dan `next_reward` (reward)
+- **Fitur** (17): temporal (hari, minggu, bulan), survey sebelumnya, rolling average reward/interval (3/5/10), survey count 7/30 hari, trend — semuanya hanya menggunakan informasi **sebelum** target terjadi (anti-leakage)
+- **Validasi**: walk-forward / expanding window — tidak ada random split, model hanya belajar dari masa lalu
+- **Metrik**: MAE, RMSE, R², akurasi within-tolerance (±1/±3/±7 hari untuk arrival; ±Rp500/1.000/2.000 untuk reward)
+- **Reliability**: dihitung dari akurasi historis ±3 hari / ±Rp1.000 × faktor kecukupan data — bukan jaminan
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Catatan
+
+- File `xlsx` (npm) memiliki advisory keamanan tanpa fix resmi; risiko rendah karena tool personal dan file import hanya berasal dari pengguna sendiri
+- Data tersimpan lokal di `data/app.db` (sudah di-gitignore); backup kapan saja lewat **Pengaturan → Export Data**

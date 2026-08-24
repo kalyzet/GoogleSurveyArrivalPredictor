@@ -370,16 +370,18 @@ export default function DataPage() {
           </div>
           <div>
             <label className="text-xs text-muted mb-1 block">Reward</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">Rp</span>
+            <div className="flex items-center rounded-lg border border-border-subtle bg-surface px-3 focus-within:border-indigo-600 focus-within:ring-3 focus-within:ring-indigo-500/15 transition-colors">
+              <span className="text-sm text-muted select-none shrink-0">Rp</span>
               <input
-                type="number"
-                min="0"
-                step="1"
-                value={formReward}
-                onChange={(e) => setFormReward(e.target.value)}
+                type="text"
+                inputMode="numeric"
+                value={formReward === "" ? "" : Number(formReward).toLocaleString("id-ID")}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+                  setFormReward(digits.slice(0, 12));
+                }}
                 placeholder="6.546"
-                className="input-base pl-9"
+                className="w-full bg-transparent outline-none py-2 pl-2 text-sm text-foreground placeholder:text-muted"
               />
             </div>
           </div>
