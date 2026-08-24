@@ -1,6 +1,6 @@
-import { getDb } from "../db";
-import type { Survey, SurveyWithInterval } from "../types";
-import { daysBetween } from "../stats";
+import { getDb } from "./db";
+import type { Survey, SurveyWithInterval } from "./types";
+import { daysBetween } from "./stats";
 
 export interface ValidationResult {
   ok: boolean;

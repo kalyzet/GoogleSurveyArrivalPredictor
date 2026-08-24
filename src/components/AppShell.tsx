@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import {
   LayoutDashboard,
   Sparkles,
@@ -26,21 +26,45 @@ const NAV = [
 
 const MOBILE_NAV = [...NAV.slice(0, 4), { href: "/settings", label: "More", icon: Settings }];
 
+type Listener = () => void;
+let themeListeners: Listener[] = [];
+const themeObserver =
+  typeof window !== "undefined"
+    ? new MutationObserver(() => themeListeners.forEach((l) => l()))
+    : null;
+
+function subscribeTheme(cb: Listener): () => void {
+  if (!themeObserver) return () => {};
+  if (themeListeners.length === 0) {
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  }
+  themeListeners.push(cb);
+  return () => {
+    themeListeners = themeListeners.filter((l) => l !== cb);
+  };
+}
+
+function getThemeSnapshot(): boolean {
+  return document.documentElement.classList.contains("dark");
+}
+
 function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const dark = useSyncExternalStore(
+    subscribeTheme,
+    getThemeSnapshot,
+    () => false,
+  );
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
     const isDark =
       stored === "dark" ||
       (stored === null && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setDark(isDark);
     document.documentElement.classList.toggle("dark", isDark);
   }, []);
 
   const toggle = () => {
     const next = !dark;
-    setDark(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
   };

@@ -1,5 +1,5 @@
-import type { Survey } from "../types";
-import { addDays, daysBetween, mean } from "../stats";
+import type { Survey } from "./types";
+import { addDays, daysBetween, mean } from "./stats";
 
 export interface Sample {
   features: number[];

@@ -1,5 +1,4 @@
 import type { Sample } from "../features";
-import { computeRegressionMetrics } from "./metrics";
 import {
   LinearRegressionModel,
   MedianBaseline,

@@ -14,7 +14,7 @@ export class MedianBaseline implements Regressor {
     this.value = sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
   }
 
-  predict(_x: number[]): number {
+  predict(): number {
     return this.value;
   }
 }
@@ -33,7 +33,7 @@ export class MovingAverageBaseline implements Regressor {
   }
   private value = 0;
 
-  predict(_x: number[]): number {
+  predict(): number {
     return this.value;
   }
 }
@@ -117,10 +117,10 @@ export class RandomForestModel implements Regressor {
       const mod = await import("ml-random-forest");
       this.forest = new mod.RandomForestRegression({
         nEstimators: 40,
-        maxDepth: 6,
+        treeOptions: { maxDepth: 6 },
         minNumSamples: 2,
         seed: 42,
-      });
+      } as ConstructorParameters<typeof mod.RandomForestRegression>[0]);
     }
   }
 

@@ -1,7 +1,8 @@
 import { listSurveys, getDatasetHealth } from "@/lib/dataService";
+import { getDb } from "@/lib/db";
 import { getActiveModel } from "@/lib/ml/train";
 import { daysBetween, mean, median, quantile } from "@/lib/stats";
-import type { HorizonProbability } from "@/lib/types";
+import type { HorizonProbability, PredictionRecord } from "@/lib/types";
 
 export async function GET() {
   const surveys = listSurveys();
@@ -10,6 +11,9 @@ export async function GET() {
   const intervals = surveys.slice(1).map((s) => s.interval ?? 0);
 
   const last = surveys[surveys.length - 1] ?? null;
+  const latestPrediction = getDb()
+    .prepare("SELECT * FROM predictions WHERE status = 'pending' ORDER BY created_at DESC LIMIT 1")
+    .get() as PredictionRecord | undefined;
 
   const horizonProbabilities: HorizonProbability[] = [];
   if (intervals.length > 0) {
@@ -37,5 +41,16 @@ export async function GET() {
     horizonProbabilities,
     hasModel: !!getActiveModel("arrival") && !!getActiveModel("reward"),
     daysSinceLastSurvey: last ? Math.max(0, daysBetween(last.date, new Date().toISOString().slice(0, 10))) : null,
+    latestPrediction: latestPrediction
+      ? {
+          predictedIntervalDays: latestPrediction.predicted_interval,
+          predictedDate: latestPrediction.predicted_date,
+          predictedReward: latestPrediction.predicted_reward,
+          rangeLowReward: latestPrediction.range_low_reward,
+          rangeHighReward: latestPrediction.range_high_reward,
+          reliabilityArrival: latestPrediction.reliability_arrival,
+          reliabilityReward: latestPrediction.reliability_reward,
+        }
+      : null,
   });
 }

@@ -28,15 +28,17 @@ export default function ModelPage() {
   const [step, setStep] = useState(0);
   const [lastSummary, setLastSummary] = useState<{ arrival: TrainRow[]; reward: TrainRow[]; datasetSize: number; sampleCount: number } | null>(null);
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/models");
-    const json = await res.json();
-    setVersions(json.versions);
-    return json.versions as ModelVersion[];
-  }, []);
+  const load = useCallback(
+    () =>
+      fetch("/api/models")
+        .then((r) => r.json())
+        .then((json) => setVersions(json.versions))
+        .catch(() => {}),
+    [],
+  );
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const train = async () => {
@@ -76,7 +78,7 @@ export default function ModelPage() {
 
   const renderTable = (rows: TrainRow[] | null, target: "arrival" | "reward") => {
     if (!rows) {
-      const targetVersions = versions.filter((v) => v.target === target).sort((a, b) => a.mae - b.mae);
+      const targetVersions = versions.filter((v) => v.target === target).sort((a, b) => parseMetrics(a).mae - parseMetrics(b).mae);
       if (targetVersions.length === 0) return null;
       rows = targetVersions.map((v) => {
         const m = parseMetrics(v);

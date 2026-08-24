@@ -26,13 +26,17 @@ export function evaluatePendingPredictions(newSurveyDate: string, newSurveyRewar
         reward_error = ?
     WHERE id = ?
   `);
+  const getReward = db.prepare(
+    "SELECT predicted_reward FROM predictions WHERE id = ?",
+  );
   const tx = db.transaction(() => {
     for (const p of pending) {
+      const { predicted_reward } = getReward.get(p.id) as { predicted_reward: number };
       update.run(
         newSurveyDate,
         newSurveyReward,
         daysBetween(p.predicted_date, newSurveyDate),
-        newSurveyReward - (db.prepare("SELECT predicted_reward FROM predictions WHERE id = ?").get(p.id) as { predicted_reward: number }).predicted_reward,
+        newSurveyReward - predicted_reward,
         p.id,
       );
     }

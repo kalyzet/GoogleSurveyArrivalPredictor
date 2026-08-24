@@ -17,15 +17,20 @@ export default function SettingsPage() {
   const [health, setHealth] = useState<Health | null>(null);
   const [coldstartApplied, setColdstartApplied] = useState(false);
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/settings");
-    const json = await res.json();
-    setHealth(json.health);
-    setColdstartApplied(json.coldstartApplied);
-  }, []);
+  const load = useCallback(
+    () =>
+      fetch("/api/settings")
+        .then((r) => r.json())
+        .then((json) => {
+          setHealth(json.health);
+          setColdstartApplied(json.coldstartApplied);
+        })
+        .catch(() => {}),
+    [],
+  );
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const clearModels = async () => {

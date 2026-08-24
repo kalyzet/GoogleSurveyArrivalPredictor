@@ -1,5 +1,5 @@
 import { listSurveys } from "@/lib/dataService";
-import { daysBetween, mean, median, quantile } from "@/lib/stats";
+import { mean, quantile } from "@/lib/stats";
 
 export async function GET() {
   const surveys = listSurveys();

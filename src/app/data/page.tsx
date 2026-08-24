@@ -48,16 +48,24 @@ export default function DataPage() {
   const [pendingRows, setPendingRows] = useState<Array<Record<string, unknown>>>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/surveys");
-    const json = await res.json();
-    setRows(json.surveys);
-    setHealth(json.health);
-  }, []);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    fetch("/api/surveys")
+      .then((r) => r.json())
+      .then((json) => {
+        if (!active) return;
+        setRows(json.surveys);
+        setHealth(json.health);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [reloadKey]);
+
+  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
   const filtered = useMemo(() => {
     let list = rows.filter((r) => r.date.includes(search) || String(r.reward).includes(search));
@@ -68,9 +76,15 @@ export default function DataPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  useEffect(() => {
+  const onSearchChange = (value: string) => {
+    setSearch(value);
     setPage(1);
-  }, [search, sortDesc]);
+  };
+
+  const onSortToggle = () => {
+    setSortDesc(!sortDesc);
+    setPage(1);
+  };
 
   const openAdd = () => {
     setEditing(null);
@@ -110,7 +124,7 @@ export default function DataPage() {
       "success",
     );
     setModalOpen(false);
-    load();
+    reload();
   };
 
   const confirmDelete = async () => {
@@ -122,7 +136,7 @@ export default function DataPage() {
       toast("Survey deleted", "success");
     }
     setDeleting(null);
-    load();
+    reload();
   };
 
   const handleFile = async (file: File) => {
@@ -175,7 +189,7 @@ export default function DataPage() {
     toast(`Import selesai: ${preview?.validCount} record ditambahkan`, "success");
     setPreview(null);
     setPendingRows([]);
-    load();
+    reload();
   };
 
   return (
@@ -265,12 +279,12 @@ export default function DataPage() {
             <Search className="h-4 w-4 text-muted" />
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Cari tanggal atau reward…"
               className="input-base border-none shadow-none focus:shadow-none"
             />
             <button
-              onClick={() => setSortDesc(!sortDesc)}
+              onClick={onSortToggle}
               className="text-xs text-muted whitespace-nowrap hover:text-indigo-500 transition-colors"
             >
               Tanggal {sortDesc ? "↓" : "↑"}

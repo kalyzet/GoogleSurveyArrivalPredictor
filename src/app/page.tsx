@@ -13,6 +13,16 @@ import {
 } from "recharts";
 import { formatRupiah, formatDate, ReliabilityBar, StatCard, EmptyState } from "@/components/ui";
 
+interface LatestPrediction {
+  predictedIntervalDays: number;
+  predictedDate: string;
+  predictedReward: number;
+  rangeLowReward: number;
+  rangeHighReward: number;
+  reliabilityArrival: number;
+  reliabilityReward: number;
+}
+
 interface DashboardData {
   totalSurveys: number;
   totalReward: number;
@@ -27,6 +37,7 @@ interface DashboardData {
   horizonProbabilities: Array<{ days: number; probability: number }>;
   hasModel: boolean;
   daysSinceLastSurvey: number | null;
+  latestPrediction: LatestPrediction | null;
 }
 
 function greeting(): string {
@@ -112,10 +123,25 @@ export default function DashboardPage() {
           <div className="text-xs font-medium tracking-wide text-indigo-600 dark:text-indigo-400">
             NEXT SURVEY
           </div>
-          <div className="mt-2 text-3xl font-bold">~ {data.medianInterval ?? "–"} hari</div>
-          <div className="text-sm text-muted mt-1">
-            Berdasarkan median interval historis ({data.totalSurveys} survei)
-          </div>
+          {data.latestPrediction ? (
+            <>
+              <div className="mt-2 text-3xl font-bold">
+                ~ {data.latestPrediction.predictedIntervalDays} hari
+              </div>
+              <div className="text-sm text-muted mt-1">
+                Sekitar {formatDate(data.latestPrediction.predictedDate)}
+              </div>
+              <div className="mt-4 mb-1 text-xs text-muted">Reliability</div>
+              <ReliabilityBar value={data.latestPrediction.reliabilityArrival} />
+            </>
+          ) : (
+            <>
+              <div className="mt-2 text-3xl font-bold">~ {data.medianInterval ?? "–"} hari</div>
+              <div className="text-sm text-muted mt-1">
+                Berdasarkan median interval historis ({data.totalSurveys} survei)
+              </div>
+            </>
+          )}
           {data.daysSinceLastSurvey !== null && (
             <div className="text-xs text-muted mt-2">
               Sudah {data.daysSinceLastSurvey} hari sejak survei terakhir.
@@ -132,16 +158,34 @@ export default function DashboardPage() {
         <div className="card card-hover p-5">
           <div className="text-xs font-medium tracking-wide text-muted">EXPECTED REWARD</div>
           <div className="mt-2 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-500 dark:from-indigo-400 dark:to-violet-400">
-            {formatRupiah(data.medianReward)}
+            {formatRupiah(
+              data.latestPrediction
+                ? Math.round(data.latestPrediction.predictedReward)
+                : data.medianReward,
+            )}
           </div>
-          <div className="flex items-center gap-2 mt-3 text-[11px] text-muted">
-            <span>Low</span>
-            <span>●───────────●</span>
-            <span>High</span>
-          </div>
-          <div className="text-sm text-muted mt-1">
-            Median dari {data.totalSurveys} histori survei
-          </div>
+          {data.latestPrediction ? (
+            <>
+              <div className="flex items-center gap-2 mt-3 text-[11px] text-muted">
+                <span>{formatRupiah(data.latestPrediction.rangeLowReward)}</span>
+                <span>●───────────●</span>
+                <span>{formatRupiah(data.latestPrediction.rangeHighReward)}</span>
+              </div>
+              <div className="mt-3 mb-1 text-xs text-muted">Reliability</div>
+              <ReliabilityBar value={data.latestPrediction.reliabilityReward} />
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mt-3 text-[11px] text-muted">
+                <span>Low</span>
+                <span>●───────────●</span>
+                <span>High</span>
+              </div>
+              <div className="text-sm text-muted mt-1">
+                Median dari {data.totalSurveys} histori survei
+              </div>
+            </>
+          )}
         </div>
       </div>
 

@@ -4,7 +4,6 @@ import path from "path";
 import { COLDSTART } from "./coldstart";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __surveyDb: Database.Database | undefined;
 }
 
