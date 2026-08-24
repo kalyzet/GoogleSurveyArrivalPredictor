@@ -34,7 +34,7 @@ export default function HistoryPage() {
       {rows.length === 0 ? (
         <EmptyState
           title="Belum ada prediksi tersimpan"
-          description="Jalankan Run Prediction di halaman Prediction untuk mulai melacak akurasi."
+          description="Jalankan Jalankan Prediksi di halaman Prediksi untuk mulai melacak akurasi."
         />
       ) : (
         <div className="space-y-3">
@@ -43,15 +43,15 @@ export default function HistoryPage() {
               <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                 <span className="text-xs text-muted">Dibuat: {p.created_at.slice(0, 10)}</span>
                 <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${STATUS_STYLE[p.status]}`}>
-                  {p.status === "pending" ? "Waiting" : p.status === "evaluated" ? "Evaluated" : "Missed"}
+                  {p.status === "pending" ? "Menunggu" : p.status === "evaluated" ? "Dievaluasi" : "Terlewat"}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
                 <div className="space-y-1">
-                  <div className="text-[11px] uppercase tracking-wide text-muted font-medium">Predicted</div>
+                  <div className="text-[11px] uppercase tracking-wide text-muted font-medium">Prediksi</div>
                   <div>
-                    Survey: <b>{formatDate(p.predicted_date)}</b>{" "}
+                    Survei: <b>{formatDate(p.predicted_date)}</b>{" "}
                     <span className="text-muted text-xs">(~{p.predicted_interval} hari)</span>
                   </div>
                   <div>
@@ -66,12 +66,12 @@ export default function HistoryPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <div className="text-[11px] uppercase tracking-wide text-muted font-medium">Actual</div>
+                  <div className="text-[11px] uppercase tracking-wide text-muted font-medium">Aktual</div>
                   {p.status === "pending" ? (
-                    <div className="text-muted italic">Pending…</div>
+                    <div className="text-muted italic">Menunggu…</div>
                   ) : (
                     <>
-                      <div>Survey: <b>{formatDate(p.actual_date)}</b></div>
+                      <div>Survei: <b>{formatDate(p.actual_date)}</b></div>
                       <div>Reward: <b>{formatRupiah(p.actual_reward)}</b></div>
                       <div className="flex gap-4 pt-1">
                         <span
@@ -81,11 +81,11 @@ export default function HistoryPage() {
                               : "text-amber-600 dark:text-amber-400"
                           }
                         >
-                          Arrival error: {(p.arrival_error ?? 0) > 0 ? "+" : ""}
+                          Selisih tanggal: {(p.arrival_error ?? 0) > 0 ? "+" : ""}
                           {p.arrival_error} hari
                         </span>
                         <span className="text-muted">
-                          Reward error:{" "}
+                          Selisih reward:{" "}
                           {(p.reward_error ?? 0) > 0 ? "+" : ""}
                           {formatRupiah(p.reward_error)}
                         </span>

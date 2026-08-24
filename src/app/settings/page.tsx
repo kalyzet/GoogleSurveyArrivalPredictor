@@ -47,33 +47,33 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 animate-fade-up">
       <header>
-        <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Pengaturan</h1>
         <p className="text-sm text-muted mt-1">Konfigurasi dataset dan preferensi aplikasi.</p>
       </header>
 
       <div className="card p-5">
         <div className="font-semibold mb-3 flex items-center gap-2 text-sm">
-          <Database className="h-4 w-4 text-indigo-500" /> Dataset Health
+          <Database className="h-4 w-4 text-indigo-500" /> Kesehatan Dataset
         </div>
         {health ? (
           <div className="space-y-2 text-sm">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div><span className="text-muted text-xs block">Records</span><b>{health.records}</b></div>
-              <div><span className="text-muted text-xs block">Duplicates</span><b>{health.duplicates}</b></div>
-              <div><span className="text-muted text-xs block">Invalid</span><b>{health.invalidRewards}</b></div>
+              <div><span className="text-muted text-xs block">Record</span><b>{health.records}</b></div>
+              <div><span className="text-muted text-xs block">Duplikat</span><b>{health.duplicates}</b></div>
+              <div><span className="text-muted text-xs block">Tidak valid</span><b>{health.invalidRewards}</b></div>
               <div>
-                <span className="text-muted text-xs block">Cold-start seed</span>
-                <b className={coldstartApplied ? "text-emerald-500" : ""}>{coldstartApplied ? "Applied" : "Not set"}</b>
+                <span className="text-muted text-xs block">Seed cold-start</span>
+                <b className={coldstartApplied ? "text-emerald-500" : ""}>{coldstartApplied ? "Aktif" : "Belum"}</b>
               </div>
             </div>
             {health.dateRange && (
               <p className="text-xs text-muted pt-1">
-                Date range: {health.dateRange.start} → {health.dateRange.end}
+                Rentang tanggal: {health.dateRange.start} → {health.dateRange.end}
               </p>
             )}
           </div>
         ) : (
-          <div className="text-sm text-muted animate-pulse">Loading…</div>
+          <div className="text-sm text-muted animate-pulse">Memuat…</div>
         )}
       </div>
 
@@ -98,23 +98,23 @@ export default function SettingsPage() {
 
       <div className="card p-5 border-red-500/30">
         <div className="font-semibold mb-3 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
-          <Trash2 className="h-4 w-4" /> Danger Zone
+          <Trash2 className="h-4 w-4" /> Zona Berbahaya
         </div>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <p className="text-xs text-muted">
-            Menghapus semua model version (data survei tetap aman).
+            Menghapus semua versi model (data survei tetap aman).
           </p>
           <button
             onClick={clearModels}
             className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
           >
-            Clear Models
+            Hapus Semua Model
           </button>
         </div>
       </div>
 
       <div className="card p-5">
-        <div className="font-semibold mb-2 text-sm">About</div>
+        <div className="font-semibold mb-2 text-sm">Tentang</div>
         <p className="text-xs text-muted leading-relaxed">
           Survey Arrival Predictor memprediksi kapan survei berikutnya datang dan perkiraan reward-nya,
           murni dari data historis yang kamu masukkan sendiri. Model mengikuti data: jika baseline lebih akurat

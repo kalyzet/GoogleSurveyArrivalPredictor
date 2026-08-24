@@ -42,10 +42,10 @@ interface DashboardData {
 
 function greeting(): string {
   const h = new Date().getHours();
-  if (h < 11) return "Good morning";
-  if (h < 15) return "Good afternoon";
-  if (h < 19) return "Good evening";
-  return "Good night";
+  if (h < 11) return "Selamat pagi";
+  if (h < 15) return "Selamat siang";
+  if (h < 19) return "Selamat sore";
+  return "Selamat malam";
 }
 
 export default function DashboardPage() {
@@ -59,14 +59,14 @@ export default function DashboardPage() {
   }, []);
 
   if (!data) {
-    return <div className="text-sm text-muted animate-pulse">Loading dashboard…</div>;
+    return <div className="text-sm text-muted animate-pulse">Memuat dasbor…</div>;
   }
 
   if (data.totalSurveys === 0) {
     return (
       <EmptyState
-        title="No survey history yet"
-        description="Import your existing survey history to start making predictions."
+        title="Belum ada histori survei"
+        description="Import histori survei yang sudah ada untuk mulai membuat prediksi."
         action={
           <Link
             href="/data"
@@ -113,7 +113,7 @@ export default function DashboardPage() {
             href="/model"
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shrink-0"
           >
-            Train Models
+            Latih Model
           </Link>
         </div>
       )}
@@ -121,7 +121,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="card card-hover p-5 bg-gradient-to-br from-indigo-500/10 to-violet-500/10">
           <div className="text-xs font-medium tracking-wide text-indigo-600 dark:text-indigo-400">
-            NEXT SURVEY
+            SURVEI BERIKUTNYA
           </div>
           {data.latestPrediction ? (
             <>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
               <div className="text-sm text-muted mt-1">
                 Sekitar {formatDate(data.latestPrediction.predictedDate)}
               </div>
-              <div className="mt-4 mb-1 text-xs text-muted">Reliability</div>
+              <div className="mt-4 mb-1 text-xs text-muted">Keandalan</div>
               <ReliabilityBar value={data.latestPrediction.reliabilityArrival} />
             </>
           ) : (
@@ -156,7 +156,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="card card-hover p-5">
-          <div className="text-xs font-medium tracking-wide text-muted">EXPECTED REWARD</div>
+          <div className="text-xs font-medium tracking-wide text-muted">PERKIRAAN REWARD</div>
           <div className="mt-2 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-500 dark:from-indigo-400 dark:to-violet-400">
             {formatRupiah(
               data.latestPrediction
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                 <span>●───────────●</span>
                 <span>{formatRupiah(data.latestPrediction.rangeHighReward)}</span>
               </div>
-              <div className="mt-3 mb-1 text-xs text-muted">Reliability</div>
+              <div className="mt-3 mb-1 text-xs text-muted">Keandalan</div>
               <ReliabilityBar value={data.latestPrediction.reliabilityReward} />
             </>
           ) : (
@@ -228,14 +228,14 @@ export default function DashboardPage() {
       )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Surveys" value={data.totalSurveys} />
+        <StatCard label="Total Survei" value={data.totalSurveys} />
         <StatCard label="Total Reward" value={formatRupiah(data.totalReward)} />
-        <StatCard label="Avg Reward" value={formatRupiah(data.avgReward)} />
-        <StatCard label="Median Interval" value={data.medianInterval ? `${data.medianInterval} hari` : "–"} sub={`Avg ${data.avgInterval ?? "–"} hari`} />
+        <StatCard label="Rata-rata Reward" value={formatRupiah(data.avgReward)} />
+        <StatCard label="Interval Median" value={data.medianInterval ? `${data.medianInterval} hari` : "–"} sub={`Rata-rata ${data.avgInterval ?? "–"} hari`} />
       </div>
 
       <div className="card p-5">
-        <div className="font-semibold mb-3">Recent Activity</div>
+        <div className="font-semibold mb-3">Aktivitas Terbaru</div>
         <div className="divide-y divide-border-subtle">
           {data.recent.map((s) => (
             <Link

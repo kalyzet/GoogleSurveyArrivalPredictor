@@ -60,7 +60,7 @@ export async function runPrediction(): Promise<PredictionResult> {
   const arrivalActive = getActiveModel("arrival");
   const rewardActive = getActiveModel("reward");
   if (!arrivalActive || !rewardActive) {
-    throw new Error("Model belum di-training. Jalankan Train Models terlebih dahulu.");
+    throw new Error("Model belum dilatih. Jalankan Latih Model terlebih dahulu.");
   }
 
   const { minYear } = buildDataset(surveys);

@@ -16,9 +16,9 @@ interface TrainRow {
 }
 
 const TRAIN_STEPS = [
-  "Preparing features",
-  "Training models (walk-forward)",
-  "Evaluating & selecting best",
+  "Menyiapkan fitur",
+  "Melatih model (walk-forward)",
+  "Evaluasi & pilih model terbaik",
 ];
 
 export default function ModelPage() {
@@ -54,7 +54,7 @@ export default function ModelPage() {
       setStep(2);
       await new Promise((r) => setTimeout(r, 300));
       setLastSummary(json.summary);
-      toast(`Training complete ✓ Dataset: ${json.summary.datasetSize} records`, "success");
+      toast(`Training selesai ✓ Dataset: ${json.summary.datasetSize} record`, "success");
       await load();
     } catch (e) {
       toast(e instanceof Error ? e.message : "Training gagal", "error");
@@ -113,7 +113,7 @@ export default function ModelPage() {
               <td className="py-2 text-right">
                 {row.selected && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-[11px] font-medium">
-                    <Check className="h-3 w-3" /> Selected
+                    <Check className="h-3 w-3" /> Dipilih
                   </span>
                 )}
               </td>
@@ -135,7 +135,7 @@ export default function ModelPage() {
 
       <div className="card p-5">
         <div className="font-semibold mb-3 flex items-center gap-2 text-sm">
-          <Cpu className="h-4 w-4 text-indigo-500" /> Training Configuration
+          <Cpu className="h-4 w-4 text-indigo-500" /> Konfigurasi Training
         </div>
         <div className="grid grid-cols-3 gap-4 text-sm mb-4">
           <div>
@@ -147,7 +147,7 @@ export default function ModelPage() {
             <div className="font-medium">Walk-Forward Split</div>
           </div>
           <div>
-            <div className="text-xs text-muted">Features</div>
+            <div className="text-xs text-muted">Fitur</div>
             <div className="font-medium">{versions[0]?.features_used ?? 17}</div>
           </div>
         </div>
@@ -172,15 +172,15 @@ export default function ModelPage() {
           className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
         >
           <RefreshCw className={`h-4 w-4 ${training ? "animate-spin" : ""}`} />
-          {training ? "Training…" : "Train Models"}
+          {training ? "Melatih…" : "Latih Model"}
         </button>
       </div>
 
       {(activeArrival || activeReward) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { title: "ACTIVE MODEL · ARRIVAL", v: activeArrival, fmt: (x: number) => `${x.toFixed(1)} days` },
-            { title: "ACTIVE MODEL · REWARD", v: activeReward, fmt: (x: number) => formatRupiah(Math.round(x)) },
+            { title: "MODEL AKTIF · ARRIVAL", v: activeArrival, fmt: (x: number) => `${x.toFixed(1)} days` },
+            { title: "MODEL AKTIF · REWARD", v: activeReward, fmt: (x: number) => formatRupiah(Math.round(x)) },
           ].map(({ title, v, fmt }) =>
             v ? (
               <div key={title} className="card card-hover p-5">
@@ -192,7 +192,7 @@ export default function ModelPage() {
                     <div className="mt-2 space-y-0.5 text-sm text-muted">
                       <div>MAE: <b className="text-foreground">{fmt(m.mae)}</b></div>
                       <div>RMSE: <b className="text-foreground">{fmt(m.rmse)}</b></div>
-                      <div>Evaluated on {m.evalPoints} walk-forward points</div>
+                      <div>Evaluasi pada {m.evalPoints} titik walk-forward</div>
                     </div>
                   );
                 })()}
@@ -203,25 +203,25 @@ export default function ModelPage() {
       )}
 
       <div className="card p-5">
-        <div className="font-semibold mb-3 text-sm">Arrival Prediction Comparison</div>
+        <div className="font-semibold mb-3 text-sm">Perbandingan Prediksi Arrival</div>
         {renderTable(lastSummary?.arrival ?? null, "arrival")}
       </div>
 
       <div className="card p-5">
-        <div className="font-semibold mb-3 text-sm">Reward Prediction Comparison</div>
+        <div className="font-semibold mb-3 text-sm">Perbandingan Prediksi Reward</div>
         {renderTable(lastSummary?.reward ?? null, "reward")}
       </div>
 
       {versions.length > 0 && (
         <div className="card p-5">
-          <div className="font-semibold mb-3 text-sm">Version History</div>
+          <div className="font-semibold mb-3 text-sm">Riwayat Versi</div>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-muted border-b border-border-subtle">
-                <th className="py-2 font-medium">Trained</th>
+                <th className="py-2 font-medium">Dilatih</th>
                 <th className="py-2 font-medium">Target</th>
                 <th className="py-2 font-medium">Algorithm</th>
-                <th className="py-2 font-medium text-right">Samples</th>
+                <th className="py-2 font-medium text-right">Sample</th>
                 <th className="py-2 font-medium text-right">MAE</th>
               </tr>
             </thead>

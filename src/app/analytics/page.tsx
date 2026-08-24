@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
       .catch(() => {});
   }, []);
 
-  if (!data) return <div className="text-sm text-muted animate-pulse">Loading analytics…</div>;
+  if (!data)     return <div className="text-sm text-muted animate-pulse">Memuat analitik…</div>;
 
   if (data.summary.totalSurveys === 0) {
     return <div className="card p-10 text-center text-sm text-muted">Belum ada data untuk dianalisis.</div>;
@@ -67,28 +67,28 @@ export default function AnalyticsPage() {
       </header>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Surveys" value={data.summary.totalSurveys} />
-        <StatCard label="Avg Reward" value={formatRupiah(data.summary.avgReward)} />
-        <StatCard label="Median Gap" value={data.summary.medianGap !== null ? `${data.summary.medianGap} hari` : "–"} />
-        <StatCard label="Best Reward" value={formatRupiah(data.summary.bestReward)} />
+        <StatCard label="Survei" value={data.summary.totalSurveys} />
+        <StatCard label="Rata-rata Reward" value={formatRupiah(data.summary.avgReward)} />
+        <StatCard label="Gap Median" value={data.summary.medianGap !== null ? `${data.summary.medianGap} hari` : "–"} />
+        <StatCard label="Reward Terbaik" value={formatRupiah(data.summary.bestReward)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="card p-5">
-          <div className="font-semibold mb-3 text-sm">Survey Frequency (per bulan)</div>
+          <div className="font-semibold mb-3 text-sm">Frekuensi Survei (per bulan)</div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={data.surveyPerMonth.map((d) => ({ ...d, label: monthLabel(d.month) }))}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="var(--muted)" />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="var(--muted)" width={28} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v} survei`, "Count"]} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v} survei`, "Jumlah"]} />
               <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="card p-5">
-          <div className="font-semibold mb-3 text-sm">Reward Trend</div>
+          <div className="font-semibold mb-3 text-sm">Tren Reward</div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={data.rewardTimeline.map((d) => ({ ...d, label: d.date.slice(5) }))}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -111,14 +111,14 @@ export default function AnalyticsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="var(--muted)" />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="var(--muted)" width={28} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v} survei`, "Count"]} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v} survei`, "Jumlah"]} />
               <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="card p-5">
-          <div className="font-semibold mb-3 text-sm">Interval Distribution</div>
+          <div className="font-semibold mb-3 text-sm">Distribusi Interval</div>
           <div className="space-y-2.5 mt-2">
             {data.intervalBuckets.map((b) => {
               const maxCount = Math.max(...data.intervalBuckets.map((x) => x.count), 1);
@@ -146,18 +146,18 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="card p-5">
-        <div className="font-semibold mb-3 text-sm">Avg Reward per bulan</div>
+        <div className="font-semibold mb-3 text-sm">Rata-rata Reward per bulan</div>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={data.rewardPerMonth.map((d) => ({ ...d, label: monthLabel(d.month) }))}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="var(--muted)" />
             <YAxis tick={{ fontSize: 11 }} stroke="var(--muted)" width={48} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v) => [formatRupiah(Number(v)), "Avg reward"]} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(v) => [formatRupiah(Number(v)), "Rata-rata reward"]} />
             <Line type="monotone" dataKey="avg" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
         <p className="text-[11px] text-muted mt-2">
-          Longest gap: {data.summary.longestGap ?? "–"} hari
+          Gap terpanjang: {data.summary.longestGap ?? "–"} hari
         </p>
       </div>
     </div>

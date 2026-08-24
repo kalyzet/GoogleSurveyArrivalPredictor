@@ -117,10 +117,10 @@ export default function DataPage() {
     }
     toast(
       editing
-        ? "Survey updated successfully ✓"
+        ? "Survei berhasil diperbarui ✓"
         : json.evaluated > 0
-          ? `Survey added ✓ (${json.evaluated} prediksi dievaluasi)`
-          : "Survey added successfully ✓",
+          ? `Survei ditambahkan ✓ (${json.evaluated} prediksi dievaluasi)`
+          : "Survei berhasil ditambahkan ✓",
       "success",
     );
     setModalOpen(false);
@@ -133,7 +133,7 @@ export default function DataPage() {
     if (!res.ok) {
       toast("Gagal menghapus", "error");
     } else {
-      toast("Survey deleted", "success");
+      toast("Survei dihapus", "success");
     }
     setDeleting(null);
     reload();
@@ -222,7 +222,7 @@ export default function DataPage() {
             onClick={openAdd}
             className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
           >
-            <Plus className="h-4 w-4" /> Add Survey
+            <Plus className="h-4 w-4" /> Tambah Survei
           </button>
         </div>
       </header>
@@ -249,20 +249,20 @@ export default function DataPage() {
 
       {health && (
         <div className="card p-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted">
-          <span>Records: <b className="text-foreground">{health.records}</b></span>
+          <span>Record: <b className="text-foreground">{health.records}</b></span>
           {health.dateRange && (
             <span>
-              Range: {formatDate(health.dateRange.start)} — {formatDate(health.dateRange.end)}
+              Rentang: {formatDate(health.dateRange.start)} — {formatDate(health.dateRange.end)}
             </span>
           )}
-          <span>Duplicates: <b className={health.duplicates ? "text-red-500" : "text-emerald-500"}>{health.duplicates}</b></span>
-          <span>Invalid: <b className={health.invalidRewards ? "text-red-500" : "text-emerald-500"}>{health.invalidRewards}</b></span>
+          <span>Duplikat: <b className={health.duplicates ? "text-red-500" : "text-emerald-500"}>{health.duplicates}</b></span>
+          <span>Tidak valid: <b className={health.invalidRewards ? "text-red-500" : "text-emerald-500"}>{health.invalidRewards}</b></span>
         </div>
       )}
 
       {rows.length === 0 ? (
         <EmptyState
-          title="No survey history yet"
+          title="Belum ada histori survei"
           description="Tambahkan data manual atau import dari CSV/XLSX."
           action={
             <button
@@ -318,7 +318,7 @@ export default function DataPage() {
                     <button
                       onClick={() => setDeleting(row)}
                       className="p-1.5 rounded-md hover:bg-red-500/10 text-muted hover:text-red-500 transition-colors"
-                      aria-label="Delete"
+                      aria-label="Hapus"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -338,7 +338,7 @@ export default function DataPage() {
                 onClick={() => setPage(page - 1)}
                 className="px-2.5 py-1 rounded-md border border-border-subtle disabled:opacity-40 hover:border-indigo-400"
               >
-                Prev
+                Sebelumnya
               </button>
               <span className="px-2 py-1">{page} / {totalPages}</span>
               <button
@@ -346,7 +346,7 @@ export default function DataPage() {
                 onClick={() => setPage(page + 1)}
                 className="px-2.5 py-1 rounded-md border border-border-subtle disabled:opacity-40 hover:border-indigo-400"
               >
-                Next
+                Berikutnya
               </button>
             </div>
           </div>
@@ -356,7 +356,7 @@ export default function DataPage() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? "Edit Survey" : "Add Survey"}
+        title={editing ? "Edit Survei" : "Tambah Survei"}
       >
         <div className="space-y-4">
           <div>
@@ -393,13 +393,13 @@ export default function DataPage() {
               onClick={() => setModalOpen(false)}
               className="rounded-lg border border-border-subtle px-4 py-2 text-sm hover:border-indigo-400"
             >
-              Cancel
+              Batal
             </button>
             <button
               onClick={saveSurvey}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
             >
-              Save Survey
+              Simpan Survei
             </button>
           </div>
         </div>
@@ -414,7 +414,7 @@ export default function DataPage() {
             onClick={() => setDeleting(null)}
             className="rounded-lg border border-border-subtle px-4 py-2 text-sm hover:border-indigo-400"
           >
-            Cancel
+            Batal
           </button>
           <button
             onClick={confirmDelete}
@@ -428,7 +428,7 @@ export default function DataPage() {
       <Modal
         open={!!preview}
         onClose={() => setPreview(null)}
-        title="Import Preview"
+        title="Pratinjau Import"
       >
         {preview && (
           <div className="space-y-4">
@@ -439,11 +439,11 @@ export default function DataPage() {
               </div>
               <div className="rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 py-2.5">
                 <div className="text-lg font-bold">{preview.invalidCount}</div>
-                Invalid
+                Tidak valid
               </div>
               <div className="rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 py-2.5">
                 <div className="text-lg font-bold">{preview.duplicateCount}</div>
-                Duplicate
+                Duplikat
               </div>
             </div>
             {preview.preview.length > 0 && (
@@ -469,7 +469,7 @@ export default function DataPage() {
                 onClick={() => setPreview(null)}
                 className="rounded-lg border border-border-subtle px-4 py-2 text-sm hover:border-indigo-400"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={commitImport}
