@@ -11,7 +11,7 @@ import { evaluatePendingPredictions } from "@/lib/evaluate";
 
 export async function GET() {
   return Response.json({
-    surveys: listSurveys().slice().reverse(),
+    surveys: listSurveys(),
     health: getDatasetHealth(),
   });
 }

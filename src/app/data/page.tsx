@@ -68,9 +68,10 @@ export default function DataPage() {
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
   const filtered = useMemo(() => {
-    let list = rows.filter((r) => r.date.includes(search) || String(r.reward).includes(search));
-    if (sortDesc) list = [...list].reverse();
-    return list;
+    const list = rows.filter((r) => r.date.includes(search) || String(r.reward).includes(search));
+    return list.sort((a, b) =>
+      sortDesc ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date),
+    );
   }, [rows, search, sortDesc]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
