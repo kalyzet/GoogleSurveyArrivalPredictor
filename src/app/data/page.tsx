@@ -195,38 +195,90 @@ export default function DataPage() {
 
   return (
     <div className="space-y-5 animate-fade-up">
-      <header className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Data</h1>
-          <p className="text-sm text-muted mt-1">Manajemen histori survei.</p>
+<header className="space-y-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                fetch("/api/backup", { method: "GET" })
+                  .then((r) => r.blob())
+                  .then((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "backup.json";
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                  });
+              }
+              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" /> Backup
+            </button>
+            <button
+              onClick={() => document.getElementById("restore-file")?.click()}
+              className="rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
+            >
+              Restore
+            </button>
+            <input
+              type="file"
+              accept=".json"
+              id="restore-file"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = (readerEvent) => {
+                  const json = readerEvent.target?.result;
+                  if (!json) return;
+                  if (confirm("Yakinkan data saat ini akan digantikan oleh backup ini?\nSemua data lama akan hapus.")) {
+                    fetch("/api/backup", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ action: "restore", data: json }),
+                    })
+                      .then((r) => r.json())
+                      .then((j) => {
+                        if (j.ok) {
+                          toast("Data dipulihkan ✓", "success");
+                          reload();
+                        } else {
+                          toast(j.error || "Gagal restore", "error");
+                        }
+                      });
+                  }
+                };
+                reader.readAsText(f);
+              }}
+            />
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
+            >
+              <Upload className="h-4 w-4" /> Import
+            </button>
+            <a
+              href="/api/export?format=csv"
+              className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
+            >
+              <Download className="h-4 w-4" /> CSV
+            </a>
+            <a
+              href="/api/export?format=xlsx"
+              className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
+            >
+              <Download className="h-4 w-4" /> XLSX
+            </a>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              <Plus className="h-4 w-4" /> Tambah Survei
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
-          >
-            <Upload className="h-4 w-4" /> Import
-          </button>
-          <a
-            href="/api/export?format=csv"
-            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
-          >
-            <Download className="h-4 w-4" /> CSV
-          </a>
-          <a
-            href="/api/export?format=xlsx"
-            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
-          >
-            <Download className="h-4 w-4" /> XLSX
-          </a>
-          <button
-            onClick={openAdd}
-            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" /> Tambah Survei
-          </button>
-        </div>
-      </header>
 
       <input
         ref={fileRef}
