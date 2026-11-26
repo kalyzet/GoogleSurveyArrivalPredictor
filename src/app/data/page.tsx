@@ -47,6 +47,13 @@ export default function DataPage() {
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [pendingRows, setPendingRows] = useState<Array<Record<string, unknown>>>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const restoreFileRef = useRef<HTMLInputElement>(null);
+
+  const [restoreConfirm, setRestoreConfirm] = useState<{
+    data: string;
+    surveys: number;
+    predictions: number;
+  } | null>(null);
 
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -193,92 +200,133 @@ export default function DataPage() {
     reload();
   };
 
+  const handleBackup = async () => {
+    try {
+      const res = await fetch("/api/backup", { method: "GET" });
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+      toast("Backup berhasil diunduh ✓", "success");
+    } catch {
+      toast("Gagal membuat backup", "error");
+    }
+  };
+
+  const handleRestoreFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result;
+      if (typeof text !== "string") {
+        toast("Gagal membaca file", "error");
+        return;
+      }
+      try {
+        const parsed = JSON.parse(text) as { version?: number; surveys?: unknown[]; predictions?: unknown[] };
+        if (
+          parsed?.version !== 1 ||
+          !Array.isArray(parsed.surveys) ||
+          !Array.isArray(parsed.predictions)
+        ) {
+          toast("Format file backup tidak dikenal", "error");
+          return;
+        }
+        setRestoreConfirm({
+          data: text,
+          surveys: parsed.surveys.length,
+          predictions: parsed.predictions.length,
+        });
+      } catch {
+        toast("File bukan JSON yang valid", "error");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const confirmRestore = async () => {
+    if (!restoreConfirm) return;
+    try {
+      const res = await fetch("/api/backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restore", data: restoreConfirm.data }),
+      });
+      const json = await res.json();
+      if (json.ok) {
+        toast(`Data dipulihkan ✓ (${json.surveys} survei, ${json.predictions} prediksi)`, "success");
+        setRestoreConfirm(null);
+        reload();
+      } else {
+        toast(json.error || "Gagal restore", "error");
+      }
+    } catch {
+      toast("Gagal restore", "error");
+    }
+  };
+
   return (
     <div className="space-y-5 animate-fade-up">
-<header className="space-y-2">
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                fetch("/api/backup", { method: "GET" })
-                  .then((r) => r.blob())
-                  .then((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = "backup.json";
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => URL.revokeObjectURL(url), 100);
-                  });
-              }
-              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
-            >
-              <Download className="h-3.5 w-3.5" /> Backup
-            </button>
-            <button
-              onClick={() => document.getElementById("restore-file")?.click()}
-              className="rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
-            >
-              Restore
-            </button>
-            <input
-              type="file"
-              accept=".json"
-              id="restore-file"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (!f) return;
-                const reader = new FileReader();
-                reader.onload = (readerEvent) => {
-                  const json = readerEvent.target?.result;
-                  if (!json) return;
-                  if (confirm("Yakinkan data saat ini akan digantikan oleh backup ini?\nSemua data lama akan hapus.")) {
-                    fetch("/api/backup", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ action: "restore", data: json }),
-                    })
-                      .then((r) => r.json())
-                      .then((j) => {
-                        if (j.ok) {
-                          toast("Data dipulihkan ✓", "success");
-                          reload();
-                        } else {
-                          toast(j.error || "Gagal restore", "error");
-                        }
-                      });
-                  }
-                };
-                reader.readAsText(f);
-              }}
-            />
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
-            >
-              <Upload className="h-4 w-4" /> Import
-            </button>
-            <a
-              href="/api/export?format=csv"
-              className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
-            >
-              <Download className="h-4 w-4" /> CSV
-            </a>
-            <a
-              href="/api/export?format=xlsx"
-              className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
-            >
-              <Download className="h-4 w-4" /> XLSX
-            </a>
-            <button
-              onClick={() => setModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-            >
-              <Plus className="h-4 w-4" /> Tambah Survei
-            </button>
-          </div>
+      <header className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold">Data</h1>
+          <p className="text-sm text-muted mt-1">Manajemen histori survei.</p>
         </div>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={handleBackup}
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+          >
+            <Download className="h-4 w-4" /> Backup
+          </button>
+          <button
+            onClick={() => restoreFileRef.current?.click()}
+            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
+          >
+            <Upload className="h-4 w-4" /> Restore
+          </button>
+          <input
+            ref={restoreFileRef}
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleRestoreFile(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
+          >
+            <Upload className="h-4 w-4" /> Import
+          </button>
+          <a
+            href="/api/export?format=csv"
+            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
+          >
+            <Download className="h-4 w-4" /> CSV
+          </a>
+          <a
+            href="/api/export?format=xlsx"
+            className="flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm hover:border-indigo-400 transition-colors"
+          >
+            <Download className="h-4 w-4" /> XLSX
+          </a>
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" /> Tambah Survei
+          </button>
+        </div>
+      </header>
 
       <input
         ref={fileRef}
@@ -477,6 +525,43 @@ export default function DataPage() {
           >
             Delete
           </button>
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!restoreConfirm}
+        onClose={() => setRestoreConfirm(null)}
+        title="Restore Backup"
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-muted">
+            Semua data saat ini akan <b className="text-red-500">digantikan</b> oleh isi
+            backup ini. Tindakan ini tidak bisa dibatalkan.
+          </p>
+          <div className="card p-3 text-sm space-y-1">
+            <div className="flex justify-between">
+              <span className="text-muted">Survei</span>
+              <span className="font-medium">{restoreConfirm?.surveys ?? 0} record</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted">History prediksi</span>
+              <span className="font-medium">{restoreConfirm?.predictions ?? 0} record</span>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setRestoreConfirm(null)}
+              className="rounded-lg border border-border-subtle px-4 py-2 text-sm hover:border-indigo-400"
+            >
+              Batal
+            </button>
+            <button
+              onClick={confirmRestore}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              Restore
+            </button>
+          </div>
         </div>
       </Modal>
 
