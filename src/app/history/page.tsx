@@ -42,9 +42,18 @@ export default function HistoryPage() {
             <div key={p.id} className="card p-4">
               <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                 <span className="text-xs text-muted">Dibuat: {p.created_at.slice(0, 10)}</span>
-                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${STATUS_STYLE[p.status]}`}>
-                  {p.status === "pending" ? "Menunggu" : p.status === "evaluated" ? "Dievaluasi" : "Terlewat"}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {p.status === "evaluated" &&
+                    (p.arrival_error ?? 0) === 0 &&
+                    (p.reward_error ?? 0) === 0 && (
+                      <span className="rounded-full px-2.5 py-0.5 text-[11px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                        Perfect
+                      </span>
+                    )}
+                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${STATUS_STYLE[p.status]}`}>
+                    {p.status === "pending" ? "Menunggu" : p.status === "evaluated" ? "Dievaluasi" : "Terlewat"}
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
